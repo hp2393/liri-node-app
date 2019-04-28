@@ -3,7 +3,7 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
 
 ## LIRI uses the following commands:
 ```
-my-tweets, spotify-this-song, movie-this, do-what-it-says
+spotify-this-song, movie-this, do-what-it-says
 ```
 
 ## Technologies used:
@@ -13,36 +13,34 @@ my-tweets, spotify-this-song, movie-this, do-what-it-says
 
 ## npm packages: 
 
-1. [spotify](https://www.npmjs.com/package/node-spotify-api) - A simple to use API library for the Spotify REST API.
-2. [request](https://www.npmjs.com/package/request) - Request is designed to be the simplest way possible to make http calls. It supports HTTPS and follows redirects by default.
-3. [dotenv](https://www.npmjs.com/package/dotenv) - Dotenv is a zero-dependency module that loads environment variables from a .env file into process.env.
+1. Spotify
+2. Request
+3. dotenv
+4. axios
 
 ## How to Run LIRI-Bot
 
-* Step One: node liri spotify-this-song ```<song name here>```.
+* Step One: node liri spotify-this-song ```song name here```.
 	
 	This will show the following information about the song in your terminal/bash window: 
-	* Artist(s) 
-	* The song's name 
-	* A preview link of the song from Spotify 
-	* The album that the song is from
+	* Artist 
+	* Song Name 
+	* Preview Link (might be avaliable for certain songs)
+	* Album
 
-	If no song is provided then the program will default to
-	"My Heart Will Go On" by Celine Dion
-* Step Two: node liri.js movie-this ```<movie name here>```.
+
+* Step Two: node liri.js movie-this ```movie name here```.
 	
 	This will output the following information to your terminal/bash window:
-	* Title of the movie.
-	* Year the movie was released.
-	* IMDB Rating of the movie.
-	* Country where the movie was produced.
-	* Language of the movie.
-	* Plot of the movie.
-	* Actors in the movie.
-	* Rotten Tomatoes Rating.
-	* Rotten Tomatoes URL.
+	* Title
+	* Released Date
+	* IMDB Rating
+	* Country
+	* Language
+	* Plot
+	* Cast
+	* Rotten Tomatoes Score
 	
-	If the user doesn't type a movie in, the program will output data for the movie 'Mr. Nobody'
 
 * Step Three: node liri.js do-what-it-says
 

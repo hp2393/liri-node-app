@@ -1,120 +1,116 @@
 require("dotenv").config();
 
-//variables
-var keys = require("./keys.js");
+// Packages/modules
 var fs = require("fs");
-var request = require("request");
-//var Spotify = require('spotify-web-api-node');
-var Spotify = require('node-spotify-api');
+var axios = require("axios");
+var Spotify = require("node-spotify-api");
 
-//argv[2] chooses users actions; argv[3] is input parameter, ie; movie title
-var userCommand = process.argv[2];
-var secondCommand = process.argv[3];
 
-//concatenate multiple words in 2nd user argument
-for (var i = 4; i < process.argv.length; i++) {
-    secondCommand += '+' + process.argv[i];
-}
+var keys = require("./keys.js");
+var song = new Spotify(keys.spotify);
+var argv = process.argv;
+var argv2 = argv[2];
 
-// Getting Spotify Keys
-var spotify = new Spotify(keys.spotify);
-// Function for running a Spotify search
-var getSpotify = function () {
-    if (!secondCommand) {
-        secondCommand = "I Want it That Way";
+
+//Multiple word search
+var queryName = " ";
+
+for (var i = 3; i < argv.length; i++) {
+    if (i > 3 && i < argv.length) {
+        queryName = queryName + "+" + argv[i];
     }
-    console.log("getting info" + secondCommand);
-
-    spotify.search(
-        {
-            type: "track",
-            query: secondCommand
-        },
-        function (err, data) {
-            if (err) {
-                console.log("Error occurred: " + err);
-                return;
-            }
-
-            var songs = data.tracks.items;
-
-            for (var i = 0; i < songs.length; i++) {
-                console.log(i);
-                console.log("artist(s): " + songs[i].artists[0].name);
-                console.log("song name: " + songs[i].name);
-                console.log("preview song: " + songs[i].preview_url);
-                console.log("album: " + songs[i].album.name);
-                console.log("-----------------------------------");
-            }
-        }
-    );
+    else {
+    queryName += argv[i];
+    }
 };
 
-//Switch command
-function mySwitch(userCommand) {
-    //choose which statement (userCommand) to switch to and execute
-    switch (userCommand) {
-        case "spotify-this-song":
-        getSpotify();
+console.log(queryName);
+
+
+// This will allow user to search from action called (spotify-this-song, movie-this, do-what-it-says)
+
+switch (argv2) {
+
+    case "concert-this":
+        concert();
+        break;
+        
+    case "spotify-this-song":
+        songSearch();
         break;
 
-        case "do-what-it-says":
+    case "movie-this":
+        movieSearch();
+        break;
+
+    case "do-what-it-says":
         doWhat();
         break;
+};
 
-        case "movie-this":
-        getMovie();
-        break;
-    }
 
-    //OMDB Movie: movie-this
-    function getMovie() {
-        // OMDB Movie - this MOVIE base code is from class files, I have modified for more data and assigned parse.body to a Var
-        var movieName = secondCommand;
-        // Then run a request to the OMDB API with the movie specified
-        var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&apikey=8d78771";
-        console.log(queryUrl)
+// Search songs
 
-        request(queryUrl, function (error, response, body) {
+function songSearch() {
 
-            // If the request is successful = 200
-            if (!error && response.statusCode === 200) {
-                var body = JSON.parse(body);
-                console.log('================ Movie Info ================');
-                console.log("Title: " + body.Title);
-                console.log("Release Year: " + body.Year);
-                console.log("IMdB Rating: " + body.imdbRating);
-                console.log("Country: " + body.Country);
-                console.log("Language: " + body.Language);
-                console.log("Plot: " + body.Plot);
-                console.log("Actors: " + body.Actors);
-                console.log("Rotten Tomatoes Rating: " + body.Ratings[2].Value);
-                console.log("Rotten Tomatoes URL: " + body.tomatoURL);
-                console.log('==================THE END=================');
-            } else {
-                //else - throw error
-                console.log("Error occurred.")
-            }
-            //Response if user does not type in a movie title
-            if (movieName === "Mr. Nobody") {
-                console.log("-----------------------");
-                console.log("If you haven't watched 'Mr. Nobody,' then you should: http://www.imdb.com/title/tt0485947/");
-                console.log("It's on Netflix!");
-            }
-        });
-    }
+    song.search({ type: 'track', query: queryName }, function(error, data) {
+        if (error) {
+            return console.log('Error occurred: ' + error);
+        }
+        
+        var songs = data.tracks.items;
+        console.log("Artist: " + songs[0].artists[0].name);
+        console.log("Song Name: " + songs[0].name);
+        console.log("Preview Link: " + songs[0].preview_url);
+        console.log("Album: " + songs[0].album.name);
+    })
+};
 
-    //Function for command do-what-it-says
-    function doWhat() {
-        //Read random.txt file
-        fs.readFile("random.txt", "utf8", function (error, data) {
-            if (!error);
-            console.log(data.toString());
 
-            //split text with comma 
-            var split = data.toString().split(',');
-        });
-    }
-}
-//Call mySwitch function
-mySwitch(userCommand);
+// Search movies
+
+function movieSearch() {
+
+var queryUrl = "http://www.omdbapi.com/?t=" + queryName + "&apikey=8d78771";
+
+console.log(queryUrl);
+
+axios.get(queryUrl)
+    .then(function(response) {
+
+        console.log("Title: " + response.data.Title);
+        console.log("Release Date: " + response.data.Released);
+        console.log("IMDB Rating: " + response.data.Ratings[0].Value);
+        console.log("Country: " + response.data.Country);
+        console.log("Language: " + response.data.Language);
+        console.log("Plot: " + response.data.Plot);
+        console.log("Cast: " + response.data.Actors);
+        console.log("Rotten Tomatoes Score: " + response.data.Ratings[1].Value);
+    });
+};
+
+
+//do what it says
+
+function doWhat() {
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        if (error) {
+            return console.log(error);
+        }
+
+        var array = data.split(",");
+        argv = array;
+        argv2 = array[0];
+        queryName = array[1];
+
+        console.log(array[0]);
+        console.log(array[1]);
+
+        if (argv2  == "spotify-this-song") {
+            songSearch();
+        }
+        if (argv2  == "movie-this") {
+            movieSearch();
+        }
+    });
+};
